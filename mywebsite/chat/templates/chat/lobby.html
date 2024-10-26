@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lobby</title>
+</head>
+<body>
+    <h1>Lets chat!</h1>
+    <!-- To establish a websocket connect we first need to an endpoint to start the handshake -->
+    <script type = "text/javascript">
+        let url = `ws://${window.location.host}/ws/socket-server/` //endpoint
+        
+        const chatSocket = new WebSocket(url)
+        chatSocket.onmessage = function(e){ // using message event to listen to messages from our server
+            let data = JSON.parse(e.data)
+            console.log('Data: ', data)
+        }
+    </script>
+</body>
+</html>
+
+<!-- Stopped at 8:50-->
