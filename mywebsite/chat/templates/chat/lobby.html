@@ -4,12 +4,77 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Lobby</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 20px;
+        }
+
+        h1 {
+            color: #333;
+            text-align: center;
+        }
+
+        #form {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 20px;
+        }
+
+        #form input[type="text"] {
+            width: 80%;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            margin-right: 10px;
+        }
+
+        #form button {
+            padding: 10px 15px;
+            background-color: #28a745;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        #form button:hover {
+            background-color: #218838;
+        }
+
+        #messages {
+            max-height: 400px;
+            overflow-y: auto;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            padding: 10px;
+            background-color: white;
+        }
+
+        #messages div {
+            margin-bottom: 10px;
+        }
+
+        #messages p {
+            background-color: #e9ecef;
+            padding: 10px;
+            border-radius: 4px;
+            margin: 0;
+        }
+    </style>
 </head>
 <body>
-    <h1>Lets chat!</h1>
+    <h1>Cyber Chat</h1>
 
-    <form id = "form">
-        <input type="text" name = "message"/>
+    <form id="user-form">
+        <input type="text" id="username" placeholder="Enter your name" required />
+        <button type="submit">Join Chat</button>
+    </form>
+
+    <form id="form" style="display:none;">
+        <input type="text" name="message" placeholder="Type your message here..." required />
         <button type="submit">Send</button> <!-- Added send button -->
     </form>
 
@@ -18,32 +83,39 @@
     <!-- To establish a websocket connect we first need to an endpoint to start the handshake -->
     <script type = "text/javascript">
         let url = `ws://${window.location.host}/ws/socket-server/` //endpoint
-        
-        const chatSocket = new WebSocket(url)
-        chatSocket.onmessage = function(e){ // using message event to listen to messages from our server
-            let data = JSON.parse(e.data)
-            console.log('Data: ', data)
+        let chatSocket = null; // Initialize chatSocket
 
-            if (data.type === 'chat') {
-    let messages = document.getElementById('messages')
-    messages.insertAdjacentHTML('beforeend', `<div>
-        <p>${data.message}</p>
-    </div>`);
-}
+        // Handle user joining the chat
+        document.getElementById('user-form').addEventListener('submit', (e) => {
+            e.preventDefault();
+            const username = document.getElementById('username').value;
+            document.getElementById('user-form').style.display = 'none'; // Hide username form
+            document.getElementById('form').style.display = 'flex'; // Show chat form
 
-        }
-        let form = document.getElementById('form'); // Corrected case
-    form.addEventListener('submit', (e) => {
-        e.preventDefault()
-        let message = e.target.message.value
-        chatSocket.send(JSON.stringify({
-                'message': message
-        }))
-        form.reset()
-    })
+            chatSocket = new WebSocket(url);
+            chatSocket.onmessage = function(e) {
+                let data = JSON.parse(e.data);
+                console.log('Data: ', data);
 
+                if (data.type === 'chat') {
+                    let messages = document.getElementById('messages');
+                    messages.insertAdjacentHTML('beforeend', `<div>
+                        <p><strong>${data.username}:</strong> ${data.message}</p>
+                    </div>`);
+                }
+            };
+
+            // Set up the event listener for the message form
+            document.getElementById('form').addEventListener('submit', (e) => {
+                e.preventDefault();
+                let message = e.target.message.value;
+                chatSocket.send(JSON.stringify({
+                    'username': username, // Send the username along with the message
+                    'message': message
+                }));
+                e.target.reset();
+            });
+        });
     </script>
 </body>
 </html>
-
-<!-- Stopped at 8:50-->
