@@ -7,6 +7,14 @@
 </head>
 <body>
     <h1>Lets chat!</h1>
+
+    <form id = "form">
+        <input type="text" name = "message"/>
+        <button type="submit">Send</button> <!-- Added send button -->
+    </form>
+
+    <div id = "messages"></div>
+
     <!-- To establish a websocket connect we first need to an endpoint to start the handshake -->
     <script type = "text/javascript">
         let url = `ws://${window.location.host}/ws/socket-server/` //endpoint
@@ -15,7 +23,25 @@
         chatSocket.onmessage = function(e){ // using message event to listen to messages from our server
             let data = JSON.parse(e.data)
             console.log('Data: ', data)
+
+            if (data.type === 'chat') {
+    let messages = document.getElementById('messages')
+    messages.insertAdjacentHTML('beforeend', `<div>
+        <p>${data.message}</p>
+    </div>`);
+}
+
         }
+        let form = document.getElementById('form'); // Corrected case
+    form.addEventListener('submit', (e) => {
+        e.preventDefault()
+        let message = e.target.message.value
+        chatSocket.send(JSON.stringify({
+                'message': message
+        }))
+        form.reset()
+    })
+
     </script>
 </body>
 </html>
